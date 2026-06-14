@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ACS | Statistical Development & Innovation - Performance Monitoring</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: #e6f3ff; color: #1a2c3e; padding: 20px; }
+        .dashboard-container { max-width: 1600px; margin: 0 auto; }
+        .header { background: linear-gradient(135deg, #0066cc 0%, #3399ff 100%); color: white; border-radius: 28px; padding: 20px 30px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .logo-area h1 i { background: #ffb347; padding: 8px; border-radius: 50%; color: #0066cc; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 22px; margin-bottom: 30px; }
+        .kpi-card { background: white; border-radius: 24px; padding: 20px; border-left: 6px solid #ffb347; }
+        .kpi-value { font-size: 2.5rem; font-weight: 800; color: #0066cc; }
+        .row { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 30px; }
+        .col { flex: 1; min-width: 280px; }
+        .card { background: white; border-radius: 28px; padding: 20px 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); height: 100%; }
+        .card h3 { border-left: 4px solid #ffb347; padding-left: 14px; }
+        .btn-sm { background: #0066cc; color: white; border: none; padding: 6px 14px; border-radius: 40px; cursor: pointer; }
+        .log-stream { background: #0a2a44; color: #88ddff; border-radius: 20px; padding: 15px; font-family: monospace; height: 200px; overflow-y: auto; }
+        .privacy-banner { background: #dceeff; border-left: 6px solid #0066cc; border-radius: 16px; padding: 16px 24px; margin-bottom: 28px; }
+        .live-dot { width: 12px; height: 12px; background-color: #2ecc71; border-radius: 50%; animation: pulse 1.5s infinite; display: inline-block; }
+        @keyframes pulse { 0% { opacity: 0.4; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <div class="header">
+        <div class="logo-area">
+            <h1><i class="fas fa-chalkboard-teacher"></i> ACS · Statistical Development, Data Innovation & Outreach</h1>
+            <p>NSDS · Training · Data Literacy · Innovation Labs · Partnerships</p>
+        </div>
+        <div class="badge"><i class="fas fa-graduation-cap"></i> CAPACITY BUILDING DASH <span class="live-dot"></span></div>
+    </div>
+    <div class="privacy-banner"><i class="fas fa-shield-alt"></i> All training and innovation metrics are synthetic demonstrations.</div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-title"><i class="fas fa-users"></i> Statisticians Trained</div><div class="kpi-value" id="kpiTrained">2,847</div><div class="kpi-trend">+342 this quarter</div></div>
+        <div class="kpi-card"><div class="kpi-title"><i class="fas fa-laptop-code"></i> Innovation Hubs</div><div class="kpi-value" id="kpiHubs">28</div><div class="kpi-trend">active across Africa</div></div>
+        <div class="kpi-card"><div class="kpi-title"><i class="fas fa-chart-line"></i> NSDS Implementation</div><div class="kpi-value" id="kpiNSDS">73<span style="font-size:1.2rem;">%</span></div><div class="kpi-trend">34 countries</div></div>
+        <div class="kpi-card"><div class="kpi-title"><i class="fas fa-handshake"></i> Active Partnerships</div><div class="kpi-value" id="kpiPartners">46</div><div class="kpi-trend">UN, AU, World Bank, AfDB</div></div>
+    </div>
+
+    <div class="row">
+        <div class="col"><div class="card"><h3><i class="fas fa-chart-line"></i> Real-Time: Training Enrollment</h3><canvas id="realtimeChart"></canvas><button id="simulateBtn" class="btn-sm">Simulate Enrollment Spike</button></div></div>
+        <div class="col"><div class="card"><h3><i class="fas fa-chart-bar"></i> Predictive: Training Demand</h3><canvas id="predictiveChart"></canvas></div></div>
+    </div>
+
+    <div class="row">
+        <div class="col"><div class="card"><h3><i class="fas fa-file-alt"></i> Automated Reports</h3><table style="width:100%"><tr><th>Report</th><th>Action</th></tr><tr><td>Training Impact Report</td><td><button class="btn-sm download" data-report="training_q2">Download</button></td></tr><tr><td>Innovation Lab Metrics</td><td><button class="btn-sm download" data-report="innovation">Download</button></td></tr></table><div style="margin-top:12px; background:#f9f5eb; padding:8px; border-radius:12px; font-size:0.7rem;">⚠️ Simulated downloads — modify bindReportDownloads() for real file saving.</div></div></div>
+        <div class="col"><div class="card"><h3><i class="fas fa-bell"></i> Capacity Alerts</h3><div id="alertContainer"></div><div class="log-stream" id="liveLog"><div>✅ Training platform active</div><div>📊 247 new enrollments today</div></div></div></div>
+    </div>
+    <footer>ACS Statistical Development Section — Synthetic data for demonstration.</footer>
+</div>
+<script>
+    let dataPoints = [210, 225, 238, 247, 256, 268, 279];
+    let realtimeChart, predictiveChart;
+    let forecastDemand = [310, 345, 382, 420, 465, 512];
+    const liveLog = document.getElementById('liveLog');
+    function addLog(msg){ const e=document.createElement('div'); e.innerHTML=`🕒 ${new Date().toLocaleTimeString()} - ${msg}`; liveLog.prepend(e); if(liveLog.children.length>8) liveLog.removeChild(liveLog.lastChild); }
+    function updateRealtime(v){ dataPoints.push(v); if(dataPoints.length>12) dataPoints.shift(); realtimeChart.data.datasets[0].data=dataPoints; realtimeChart.update(); document.getElementById('kpiTrained').innerText=2847+Math.floor(Math.random()*20); addLog(`Enrollments: ${v}/day`); }
+    const rtCanvas=document.getElementById('realtimeChart'); realtimeChart=new Chart(rtCanvas,{type:'line',data:{labels:Array.from({length:dataPoints.length},(_,i)=>`Day ${i+1}`),datasets:[{label:'Daily Training Enrollments',data:dataPoints,borderColor:'#ffb347',fill:true}]}});
+    const predCanvas=document.getElementById('predictiveChart'); predictiveChart=new Chart(predCanvas,{type:'bar',data:{labels:['Q3','Q4','Q1','Q2','Q3','Q4'],datasets:[{label:'Forecast Demand',data:forecastDemand,backgroundColor:'#3399ff'}]}});
+    setInterval(()=>{let newRate=250+Math.random()*50; updateRealtime(Math.floor(newRate));},7000);
+    document.getElementById('simulateBtn').onclick=()=>{let burst=380+Math.random()*70; updateRealtime(Math.floor(burst)); addLog(`🚀 Enrollment surge: ${Math.floor(burst)} learners`);};
+    document.querySelectorAll('.download').forEach(btn=>btn.onclick=()=>alert('[Simulated] Implement Blob for real file saving.'));
+    document.getElementById('alertContainer').innerHTML='<div>📈 Training demand predicted +23% next quarter</div><div>🌍 5 new countries requesting NSDS support</div>';
+    addLog("Statistical Development monitoring initialized (synthetic)");
+</script>
+</body>
+</html>

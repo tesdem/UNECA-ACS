@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ACS | Economic, Infrastructure & Agriculture Statistics - Performance Monitoring</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: #f0f4f8; color: #1a2c3e; padding: 20px; }
+        .dashboard-container { max-width: 1600px; margin: 0 auto; }
+        .header { background: linear-gradient(135deg, #0b5e2e 0%, #1a7a42 100%); color: white; border-radius: 28px; padding: 20px 30px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .logo-area h1 { font-size: 1.8rem; display: flex; align-items: center; gap: 12px; }
+        .logo-area h1 i { background: #ffb347; padding: 8px; border-radius: 50%; color: #0b5e2e; }
+        .badge { background: rgba(255,255,255,0.2); border-radius: 40px; padding: 8px 18px; font-size: 0.85rem; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 22px; margin-bottom: 30px; }
+        .kpi-card { background: white; border-radius: 24px; padding: 20px; box-shadow: 0 5px 12px rgba(0,0,0,0.05); border-left: 6px solid #ffb347; }
+        .kpi-value { font-size: 2.5rem; font-weight: 800; color: #0b5e2e; }
+        .row { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 30px; }
+        .col { flex: 1; min-width: 280px; }
+        .card { background: white; border-radius: 28px; padding: 20px 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); height: 100%; }
+        .card h3 { font-size: 1.35rem; margin-bottom: 18px; border-left: 4px solid #ffb347; padding-left: 14px; }
+        canvas { max-height: 280px; width: 100%; }
+        .btn-sm { background: #0b5e2e; color: white; border: none; padding: 6px 14px; border-radius: 40px; cursor: pointer; }
+        .btn-sm:hover { background: #ffb347; color: #1e2f3a; }
+        .log-stream { background: #0f212e; color: #b9e6f3; border-radius: 20px; padding: 15px; font-family: monospace; height: 200px; overflow-y: auto; }
+        .privacy-banner { background: #e8edf2; border-left: 6px solid #2c7a4d; border-radius: 16px; padding: 16px 24px; margin-bottom: 28px; }
+        footer { text-align: center; margin-top: 35px; font-size: 0.75rem; color: #5f7f8c; }
+        .live-dot { width: 12px; height: 12px; background-color: #2ecc71; border-radius: 50%; animation: pulse 1.5s infinite; display: inline-block; }
+        @keyframes pulse { 0% { opacity: 0.4; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <div class="header">
+        <div class="logo-area">
+            <h1><i class="fas fa-chart-line"></i> ACS · Economic, Infrastructure & Agriculture Statistics</h1>
+            <p style="font-size:0.85rem; opacity:0.8;">GDP · National Accounts · Agriculture · Infrastructure · Trade Metrics</p>
+        </div>
+        <div class="badge"><i class="fas fa-sync-alt"></i> LIVE MONITORING <span class="live-dot"></span></div>
+    </div>
+
+    <div class="privacy-banner">
+        <i class="fas fa-shield-alt"></i> <strong>Privacy & Confidentiality:</strong> All data displayed are synthetic for demonstration. No actual economic or agricultural data from African nations is used.
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-title"><i class="fas fa-chart-line"></i> GDP Growth (Annual)</div><div class="kpi-value" id="kpiGDP">4.8<span style="font-size:1.2rem;">%</span></div><div class="kpi-trend"><i class="fas fa-arrow-up"></i> +0.6% vs Q2</div></div>
+        <div class="kpi-card"><div class="kpi-title"><i class="fas fa-tractor"></i> Agric. Production Index</div><div class="kpi-value" id="kpiAgric">112.4</div><div class="kpi-trend">Base year 2015=100</div></div>
+        <div class="kpi-card"><div class="kpi-title"><i class="fas fa-road"></i> Infrastructure Projects</div><div class="kpi-value" id="kpiInfra">347</div><div class="kpi-trend">active across 42 countries</div></div>
+        <div class="kpi-card"><div class="kpi-title"><i class="fas fa-chart-pie"></i> Trade Balance (USD bn)</div><div class="kpi-value" id="kpiTrade">+23.5</div><div class="kpi-trend">exports increasing</div></div>
+    </div>
+
+    <div class="row">
+        <div class="col"><div class="card"><h3><i class="fas fa-chart-scatter"></i> Real-Time: National Accounts Data Flow</h3><canvas id="realtimeChart"></canvas><button id="simulateBtn" class="btn-sm" style="margin-top:12px;">Simulate Data Burst</button></div></div>
+        <div class="col"><div class="card"><h3><i class="fas fa-brain"></i> Predictive: Agri Output Forecast</h3><canvas id="predictiveChart"></canvas></div></div>
+    </div>
+
+    <div class="row">
+        <div class="col"><div class="card"><h3><i class="fas fa-file-alt"></i> Automated Reports</h3><table style="width:100%"><tr><th>Report</th><th>Action</th></tr><tr><td>Quarterly GDP Report</td><td><button class="btn-sm download" data-report="gdp_q2">Download</button></td></tr><tr><td>Infrastructure Pipeline</td><td><button class="btn-sm download" data-report="infra_2025">Download</button></td></tr></table><div style="margin-top:12px; background:#f9f5eb; padding:8px; border-radius:12px; font-size:0.7rem;"><i class="fas fa-info-circle"></i> Simulated downloads — modify bindReportDownloads() for real file saving.</div></div></div>
+        <div class="col"><div class="card"><h3><i class="fas fa-exclamation-triangle"></i> Predictive Alerts</h3><div id="alertContainer"></div><div class="log-stream" id="liveLog"><div>✅ Economic monitoring active</div><div>📊 GDP data ingestion: 124 records/min</div></div></div></div>
+    </div>
+    <footer>African Centre for Statistics · Economic, Infrastructure & Agriculture Section — Synthetic data for demonstration.</footer>
+</div>
+<script>
+    let dataPoints = [85, 92, 88, 105, 112, 118, 124];
+    let realtimeChart, predictiveChart;
+    let forecastValues = [132, 145, 158, 172, 188, 205];
+    const liveLog = document.getElementById('liveLog');
+    function addLog(msg){ const e=document.createElement('div'); e.innerHTML=`🕒 ${new Date().toLocaleTimeString()} - ${msg}`; liveLog.prepend(e); if(liveLog.children.length>8) liveLog.removeChild(liveLog.lastChild); }
+    function updateRealtime(v){ dataPoints.push(v); if(dataPoints.length>12) dataPoints.shift(); realtimeChart.data.datasets[0].data=dataPoints; realtimeChart.update(); document.getElementById('kpiGDP').innerText=(4.2+Math.random()*1.2).toFixed(1)+'%'; addLog(`Economic data ingest: ${v} rec/min`); }
+    const rtCanvas=document.getElementById('realtimeChart'); realtimeChart=new Chart(rtCanvas,{type:'line',data:{labels:Array.from({length:dataPoints.length},(_,i)=>`${i+1}h`),datasets:[{label:'National Accounts Records/min',data:dataPoints,borderColor:'#ffb347',fill:true}]}});
+    const predCanvas=document.getElementById('predictiveChart'); predictiveChart=new Chart(predCanvas,{type:'bar',data:{labels:['Q3','Q4','Q1','Q2','Q3','Q4'],datasets:[{label:'Agric Output (index)',data:forecastValues,backgroundColor:'#0b5e2e'}]}});
+    setInterval(()=>{let newRate=120+Math.random()*40; updateRealtime(Math.floor(newRate));},7000);
+    document.getElementById('simulateBtn').onclick=()=>{let burst=180+Math.random()*60; updateRealtime(Math.floor(burst)); addLog(`⚠️ Burst simulation: ${Math.floor(burst)} rec/min`);};
+    document.querySelectorAll('.download').forEach(btn=>btn.onclick=()=>alert('[Simulated] Report download would save to disk. Modify bindReportDownloads() for real saving.'));
+    const alertDiv=document.getElementById('alertContainer'); alertDiv.innerHTML='<div class="alert-item">📈 GDP forecast revision: +2.3% next quarter</div><div class="alert-item">🌾 Agric commodity price volatility predicted</div>';
+    addLog("Economic & Agriculture monitoring initialized (synthetic)");
+</script>
+</body>
+</html>

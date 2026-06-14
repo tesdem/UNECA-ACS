@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ACS | Demographic & Social Statistics - Performance Monitoring</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: #fef9e8; color: #1a2c3e; padding: 20px; }
+        .dashboard-container { max-width: 1600px; margin: 0 auto; }
+        .header { background: linear-gradient(135deg, #8b4513 0%, #cd853f 100%); color: white; border-radius: 28px; padding: 20px 30px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .logo-area h1 { font-size: 1.8rem; display: flex; align-items: center; gap: 12px; }
+        .logo-area h1 i { background: #ffd700; padding: 8px; border-radius: 50%; color: #8b4513; }
+        .badge { background: rgba(255,255,255,0.2); border-radius: 40px; padding: 8px 18px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 22px; margin-bottom: 30px; }
+        .kpi-card { background: white; border-radius: 24px; padding: 20px; border-left: 6px solid #ffd700; }
+        .kpi-value { font-size: 2.5rem; font-weight: 800; color: #8b4513; }
+        .row { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 30px; }
+        .col { flex: 1; min-width: 280px; }
+        .card { background: white; border-radius: 28px; padding: 20px 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); height: 100%; }
+        .card h3 { font-size: 1.35rem; margin-bottom: 18px; border-left: 4px solid #ffd700; padding-left: 14px; }
+        canvas { max-height: 280px; width: 100%; }
+        .btn-sm { background: #8b4513; color: white; border: none; padding: 6px 14px; border-radius: 40px; cursor: pointer; }
+        .log-stream { background: #2c1a0e; color: #f5deb3; border-radius: 20px; padding: 15px; font-family: monospace; height: 200px; overflow-y: auto; }
+        .privacy-banner { background: #fff3e0; border-left: 6px solid #ffd700; border-radius: 16px; padding: 16px 24px; margin-bottom: 28px; }
+        footer { text-align: center; margin-top: 35px; font-size: 0.75rem; color: #5f7f8c; }
+        .live-dot { width: 12px; height: 12px; background-color: #2ecc71; border-radius: 50%; animation: pulse 1.5s infinite; display: inline-block; }
+        @keyframes pulse { 0% { opacity: 0.4; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <div class="header">
+        <div class="logo-area">
+            <h1><i class="fas fa-users"></i> ACS · Demographic & Social Statistics</h1>
+            <p style="font-size:0.85rem;">Population · Census · Civil Registration · Gender · Health · Education</p>
+        </div>
+        <div class="badge"><i class="fas fa-heartbeat"></i> SOCIAL INDICATORS LIVE <span class="live-dot"></span></div>
+    </div>
+
+    <div class="privacy-banner"><i class="fas fa-shield-alt"></i> <strong>Confidentiality:</strong> All demographic data shown are synthetic. No real individual or household information is present.</div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-title"><i class="fas fa-venus-mars"></i> Pop. Coverage (Census)</div><div class="kpi-value" id="kpiPop">98.2<span style="font-size:1.2rem;">%</span></div><div class="kpi-trend">+1.3% vs 2024</div></div>
+        <div class="kpi-card"><div class="kpi-title"><i class="fas fa-baby-carriage"></i> Birth Registration Rate</div><div class="kpi-value" id="kpiBirth">76.4<span style="font-size:1.2rem;">%</span></div><div class="kpi-trend">+4.2% year-on-year</div></div>
+        <div class="kpi-card"><div class="kpi-title"><i class="fas fa-venus"></i> Gender Parity Index</div><div class="kpi-value" id="kpiGender">0.94</div><div class="kpi-trend">Education enrollment</div></div>
+        <div class="kpi-card"><div class="kpi-title"><i class="fas fa-school"></i> SDG Indicator Coverage</div><div class="kpi-value" id="kpiSDG">87<span style="font-size:1.2rem;">%</span></div><div class="kpi-trend">32/37 indicators</div></div>
+    </div>
+
+    <div class="row">
+        <div class="col"><div class="card"><h3><i class="fas fa-chart-line"></i> Real-Time: CRVS Data Ingest</h3><canvas id="realtimeChart"></canvas><button id="simulateBtn" class="btn-sm" style="margin-top:12px;">Simulate Registration Surge</button></div></div>
+        <div class="col"><div class="card"><h3><i class="fas fa-chart-bar"></i> Predictive: Population Growth</h3><canvas id="predictiveChart"></canvas></div></div>
+    </div>
+
+    <div class="row">
+        <div class="col"><div class="card"><h3><i class="fas fa-file-alt"></i> Automated Reports</h3><table style="width:100%"><tr><th>Report</th><th>Action</th></tr><tr><td>Census 2025 Prelim</td><td><button class="btn-sm download" data-report="census_2025">Download</button></td></tr><tr><td>Gender Dashboard</td><td><button class="btn-sm download" data-report="gender_q2">Download</button></td></tr></table><div style="margin-top:12px; background:#f9f5eb; padding:8px; border-radius:12px; font-size:0.7rem;"><i class="fas fa-info-circle"></i> Simulated downloads — modify bindReportDownloads() for real file saving.</div></div></div>
+        <div class="col"><div class="card"><h3><i class="fas fa-exclamation-triangle"></i> Demographic Alerts</h3><div id="alertContainer"></div><div class="log-stream" id="liveLog"><div>✅ CRVS system online</div><div>📊 Birth registration rate: 76.4%</div></div></div></div>
+    </div>
+    <footer>ACS Demographic & Social Statistics Section — Synthetic data for capacity building.</footer>
+</div>
+<script>
+    let dataPoints = [145, 152, 148, 168, 175, 182, 190];
+    let realtimeChart, predictiveChart;
+    let forecastPop = [2.8, 2.9, 3.1, 3.2, 3.3, 3.5];
+    const liveLog = document.getElementById('liveLog');
+    function addLog(msg){ const e=document.createElement('div'); e.innerHTML=`🕒 ${new Date().toLocaleTimeString()} - ${msg}`; liveLog.prepend(e); if(liveLog.children.length>8) liveLog.removeChild(liveLog.lastChild); }
+    function updateRealtime(v){ dataPoints.push(v); if(dataPoints.length>12) dataPoints.shift(); realtimeChart.data.datasets[0].data=dataPoints; realtimeChart.update(); document.getElementById('kpiBirth').innerText=(75+Math.random()*3).toFixed(1)+'%'; addLog(`CRVS records: ${v} registrations/min`); }
+    const rtCanvas=document.getElementById('realtimeChart'); realtimeChart=new Chart(rtCanvas,{type:'line',data:{labels:Array.from({length:dataPoints.length},(_,i)=>`${i+1}h`),datasets:[{label:'Birth Registrations/min',data:dataPoints,borderColor:'#ffd700',fill:true}]}});
+    const predCanvas=document.getElementById('predictiveChart'); predictiveChart=new Chart(predCanvas,{type:'bar',data:{labels:['2026','2027','2028','2029','2030'],datasets:[{label:'Population (millions)',data:forecastPop,backgroundColor:'#cd853f'}]}});
+    setInterval(()=>{let newRate=170+Math.random()*50; updateRealtime(Math.floor(newRate));},8000);
+    document.getElementById('simulateBtn').onclick=()=>{let burst=250+Math.random()*80; updateRealtime(Math.floor(burst)); addLog(`⚠️ Census surge: ${Math.floor(burst)} registrations`);};
+    document.querySelectorAll('.download').forEach(btn=>btn.onclick=()=>alert('[Simulated] Report download — implement Blob for real saving.'));
+    document.getElementById('alertContainer').innerHTML='<div>📊 Fertility rate decline detected (synthetic)</div><div>⚠️ 3 regions under-registered births</div>';
+    addLog("Demographic & Social monitoring active (synthetic)");
+</script>
+</body>
+</html>
