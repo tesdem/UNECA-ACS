@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ACS Executive Dashboard | Success Measures & Evidence</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #f0f4f8;
+            padding: 24px;
+        }
+
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        .exec-header {
+            background: linear-gradient(135deg, #0b2b3b 0%, #124e66 100%);
+            color: white;
+            border-radius: 28px;
+            padding: 24px 32px;
+            margin-bottom: 28px;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+        }
+        .exec-header h1 {
+            font-size: 1.9rem;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .exec-header h1 i {
+            background: #ffb347;
+            padding: 10px;
+            border-radius: 50%;
+            color: #0b2b3b;
+        }
+        .subhead {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            opacity: 0.85;
+            border-left: 3px solid #ffb347;
+            padding-left: 18px;
+        }
+        .badge-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-badge {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px);
+            border-radius: 60px;
+            padding: 6px 18px;
+            font-size: 0.8rem;
+        }
+
+        /* Introduction Section - What is ACS & How it Works */
+        .intro-section {
+            background: white;
+            border-radius: 28px;
+            padding: 28px 32px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+            border-left: 6px solid #ffb347;
+        }
+        .intro-section h2 {
+            color: #124e66;
+            font-size: 1.6rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .intro-section h3 {
+            color: #1e5a6e;
+            margin: 20px 0 12px 0;
+            font-size: 1.2rem;
+        }
+        .intro-section p {
+            margin-bottom: 14px;
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+        .org-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .org-card {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 20px;
+            flex: 1;
+            min-width: 240px;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s;
+        }
+        .org-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+        }
+        .org-card i {
+            font-size: 2rem;
+            color: #ffb347;
+            margin-bottom: 12px;
+        }
+        .org-card strong {
+            color: #124e66;
+            font-size: 1.1rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .org-card .what-text {
+            font-size: 0.85rem;
+            color: #2c3e50;
+            margin: 8px 0;
+        }
+        .org-card .why-text {
+            font-size: 0.8rem;
+            color: #2c7a4d;
+            font-style: italic;
+            border-top: 1px dashed #cbd5e1;
+            margin-top: 10px;
+            padding-top: 8px;
+        }
+        .focus-tag {
+            background: #eef2fa;
+            color: #124e66;
+            border-radius: 40px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            margin: 4px 4px 0 0;
+        }
+        .quote-text {
+            margin-top: 16px;
+            font-style: italic;
+            color: #5a6e7c;
+            background: #f0f4f8;
+            padding: 12px 18px;
+            border-radius: 20px;
+        }
+
+        /* Country Filter Bar */
+        .filter-bar {
+            background: white;
+            border-radius: 60px;
+            padding: 8px 20px;
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+        .filter-label {
+            font-weight: 600;
+            color: #124e66;
+        }
+        .country-select {
+            background: #f0f4f8;
+            border: 1px solid #cbd5e1;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            min-width: 220px;
+        }
+        .reset-btn {
+            background: #124e66;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .reset-btn:hover {
+            background: #ffb347;
+            color: #1a2c3e;
+        }
+
+        /* Three-pillar KPI row */
+        .pillar-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 22px;
+            margin-bottom: 32px;
+        }
+        .pillar-card {
+            background: white;
+            border-radius: 28px;
+            padding: 20px 24px;
+            flex: 1;
+            min-width: 220px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+            border-top: 5px solid #ffb347;
+        }
+        .pillar-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #124e66;
+            margin-bottom: 12px;
+        }
+        .pillar-count {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: #1e5a6e;
+        }
+
+        /* Main dashboard grid: three stages */
+        .stages-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            margin-bottom: 30px;
+        }
+        .stage-card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .stage-header {
+            background: #124e66;
+            color: white;
+            padding: 18px 28px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .stage-header i {
+            font-size: 1.8rem;
+            background: #ffb347;
+            padding: 8px;
+            border-radius: 50%;
+            color: #124e66;
+        }
+        .stage-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .stage-sub {
+            font-size: 0.8rem;
+            opacity: 0.85;
+            margin-top: 5px;
+        }
+        .evidence-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .evidence-table th {
+            text-align: left;
+            padding: 16px 20px;
+            background: #f8fafc;
+            color: #1e3b4a;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .evidence-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #eef2f6;
+            vertical-align: top;
+        }
+        .focus-badge {
+            background: #eef2fa;
+            color: #124e66;
+            border-radius: 40px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .evidence-link {
+            color: #e67e22;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.75rem;
+            color: #5f7f8c;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 24px;
+        }
+        @media (max-width: 800px) {
+            body { padding: 16px; }
+            .stage-header h2 { font-size: 1.2rem; }
+            .evidence-table th, .evidence-table td { padding: 12px; }
+            .org-card { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- Executive Header -->
+    <div class="exec-header">
+        <h1><i class="fas fa-chart-line"></i> African Centre for Statistics · Executive Success Dashboard</h1>
+        <div class="subhead">
+            <i class="fas fa-flag-checkered"></i> Measuring ACS Impact: Core Mandate · Four Sections · Core Functions · Knowledge Products<br>
+            Three-tier success framework: <strong>Area of Focus → Observable Indicators → Specific Evidence</strong>
+        </div>
+        <div class="badge-stats">
+            <span class="stat-badge"><i class="fas fa-database"></i> 54 Member States</span>
+            <span class="stat-badge"><i class="fas fa-chart-simple"></i> 4 Technical Sections</span>
+            <span class="stat-badge"><i class="fas fa-file-alt"></i> 12+ Knowledge Products</span>
+            <span class="stat-badge"><i class="fas fa-globe"></i> StatCom-Africa | Agenda 2063 | SDGs</span>
+        </div>
+    </div>
+
+    <!-- INTRODUCTION: What is ACS & How It Works + Four Sections with "What & Why" -->
+    <div class="intro-section">
+        <h2><i class="fas fa-university"></i> What is the African Centre for Statistics (ACS)?</h2>
+        <p>The <strong>African Centre for Statistics (ACS)</strong> is the statistical hub of the United Nations Economic Commission for Africa (UNECA). Established in 2006, ACS serves as the <strong>regional coordinator of statistics in Africa</strong>, responsible for improving the production, dissemination, and use of high-quality, comparable data to support evidence-based policymaking under the <strong>UN 2030 Agenda (SDGs)</strong> and the <strong>AU Agenda 2063</strong>.</p>
+        
+        <h3><i class="fas fa-building"></i> The Four Main Technical Sections: What They Do & Why It Matters</h3>
+        <div class="org-grid">
+            <div class="org-card">
+                <i class="fas fa-chart-line"></i>
+                <strong>Economic, Infrastructure & Agriculture Statistics</strong>
+                <div class="what-text"><i class="fas fa-cog"></i> <strong>What:</strong> GDP rebasing, national accounts, agricultural surveys, infrastructure indicators, trade statistics harmonization.</div>
+                <div class="why-text"><i class="fas fa-lightbulb"></i> <strong>Why it matters:</strong> Provides the hard data needed to measure economic growth, structural transformation, and food security across the continent — essential for investment decisions and poverty reduction strategies.</div>
+            </div>
+            <div class="org-card">
+                <i class="fas fa-users"></i>
+                <strong>Demographic & Social Statistics</strong>
+                <div class="what-text"><i class="fas fa-cog"></i> <strong>What:</strong> Population censuses, Civil Registration and Vital Statistics (CRVS), gender statistics, migration, health and education data.</div>
+                <div class="why-text"><i class="fas fa-lightbulb"></i> <strong>Why it matters:</strong> Supports the monitoring of human development, social inclusion, and progress towards the SDGs. Accurate demographic data ensures no one is left behind in policy planning.</div>
+            </div>
+            <div class="org-card">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <strong>Statistical Development, Data Innovation & Outreach</strong>
+                <div class="what-text"><i class="fas fa-cog"></i> <strong>What:</strong> National Strategies for the Development of Statistics (NSDS), statistical training, data science campuses, mobile tech, partnerships.</div>
+                <div class="why-text"><i class="fas fa-lightbulb"></i> <strong>Why it matters:</strong> Builds long-term statistical capacity across Africa, ensuring that countries have the skills and modern tools required to produce high-quality, sustainable statistics.</div>
+            </div>
+            <div class="org-card">
+                <i class="fas fa-map-marked-alt"></i>
+                <strong>Geospatial Information Management Systems</strong>
+                <div class="what-text"><i class="fas fa-cog"></i> <strong>What:</strong> African Geodetic Reference Frame (AFREF), administrative boundaries, satellite imagery integration with statistics.</div>
+                <div class="why-text"><i class="fas fa-lightbulb"></i> <strong>Why it matters:</strong> Enables location-based decision-making for urban planning, disaster risk reduction, environmental monitoring, and resource allocation — bridging the gap between numbers and maps.</div>
+            </div>
+        </div>
+
+        <h3><i class="fas fa-cogs"></i> How ACS Works: Core Functions</h3>
+        <p><strong>1. Strengthening National Statistical Systems:</strong> Building capacity of National Statistical Offices (NSOs) across 54 member states through training, technical assistance, and field advisory missions.</p>
+        <p><strong>2. Improving Data Availability and Harmonization:</strong> Promoting international standards and comparable methodologies across Africa.</p>
+        <p><strong>3. Supporting Censuses and Surveys:</strong> Providing direct technical and material support for population censuses, agricultural censuses, and household surveys.</p>
+        <p><strong>4. Modern Data Collection:</strong> Deploying mobile technologies, camera-based monitoring, and R programming pipelines.</p>
+        <p><strong>5. Coordination and Advocacy:</strong> Organizing StatCom-Africa, FASDev, ASSD, and the African Statistical Coordination Committee.</p>
+
+        <h3><i class="fas fa-book-open"></i> Key Knowledge Products</h3>
+        <div>
+            <span class="focus-tag"><i class="fas fa-chart-bar"></i> African Statistical Yearbook</span>
+            <span class="focus-tag"><i class="fas fa-database"></i> ECAstats Data Portal</span>
+            <span class="focus-tag"><i class="fas fa-venus-mars"></i> African Gender Index</span>
+            <span class="focus-tag"><i class="fas fa-chart-line"></i> Statistical Development Indicator (StatDI)</span>
+            <span class="focus-tag"><i class="fas fa-newspaper"></i> African Statistical Newsletter</span>
+        </div>
+        <div class="quote-text">
+            <i class="fas fa-quote-left"></i> "Advanced statistical system is critical for Africa to achieve the African Union 2063 and United Nations 2030 sustainable development targets." — Oliver Chinganya, former Director of ACS
+        </div>
+    </div>
+
+    <!-- Country Filter Row -->
+    <div class="filter-bar">
+        <div><i class="fas fa-map-marker-alt filter-label"></i> <span class="filter-label">Country / Regional Filter:</span></div>
+        <select id="countryFilter" class="country-select">
+            <option value="all">🌍 All African Union Member States</option>
+            <option value="Kenya">🇰🇪 Kenya</option>
+            <option value="South Sudan">🇸🇸 South Sudan</option>
+            <option value="Malawi">🇲🇼 Malawi</option>
+            <option value="Ghana">🇬🇭 Ghana</option>
+            <option value="Rwanda">🇷🇼 Rwanda</option>
+            <option value="Senegal">🇸🇳 Senegal</option>
+            <option value="Tanzania">🇹🇿 Tanzania</option>
+            <option value="Nigeria">🇳🇬 Nigeria</option>
+            <option value="Ethiopia">🇪🇹 Ethiopia</option>
+            <option value="South Africa">🇿🇦 South Africa</option>
+        </select>
+        <button id="resetFilterBtn" class="reset-btn"><i class="fas fa-undo-alt"></i> Reset Filter</button>
+    </div>
+
+    <!-- Three Pillar summary -->
+    <div class="pillar-row" id="pillarSummary">
+        <div class="pillar-card"><div class="pillar-title"><i class="fas fa-bullseye"></i> Areas of Focus</div><div class="pillar-count" id="totalFocus">0</div><div>core strategic domains</div></div>
+        <div class="pillar-card"><div class="pillar-title"><i class="fas fa-chart-line"></i> Observable Indicators</div><div class="pillar-count" id="totalIndicators">0</div><div>measurable success metrics</div></div>
+        <div class="pillar-card"><div class="pillar-title"><i class="fas fa-check-circle"></i> Specific Evidence</div><div class="pillar-count" id="totalEvidence">0</div><div>documented examples & cases</div></div>
+    </div>
+
+    <!-- THREE STAGES: 1. ACS Area of Focus | 2. Observable Indicators | 3. Specific Examples & Evidence -->
+    <div class="stages-grid">
+        <!-- Stage 1: Area of Focus -->
+        <div class="stage-card">
+            <div class="stage-header">
+                <i class="fas fa-microscope"></i>
+                <div><h2>1. ACS Area of Focus</h2><div class="stage-sub">Core mandate · Four Sections · Core functions · Knowledge products</div></div>
+            </div>
+            <div id="focusContainer" class="evidence-table-wrapper">
+                <table class="evidence-table">
+                    <thead><tr><th>Strategic Area</th><th>Description</th></tr></thead>
+                    <tbody id="focusTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Stage 2: Observable Indicators of Success -->
+        <div class="stage-card">
+            <div class="stage-header">
+                <i class="fas fa-chart-simple"></i>
+                <div><h2>2. Observable Indicators</h2><div class="stage-sub">How we measure success (country-specific & continental)</div></div>
+            </div>
+            <div id="indicatorsContainer">
+                <table class="evidence-table">
+                    <thead><tr><th>Indicator</th><th>Linked Focus Area</th><th>Progress / Status</th></tr></thead>
+                    <tbody id="indicatorsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Stage 3: Specific Examples & Evidence -->
+        <div class="stage-card">
+            <div class="stage-header">
+                <i class="fas fa-file-alt"></i>
+                <div><h2>3. Specific Examples & Evidence</h2><div class="stage-sub">Real-world achievements, publications, missions, partnerships</div></div>
+            </div>
+            <div id="evidenceContainer">
+                <table class="evidence-table">
+                    <thead><tr><th>Evidence / Case</th><th>Related Focus Area</th><th>Country / Region</th><th>Source / Reference</th></tr></thead>
+                    <tbody id="evidenceTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="footer" id="footerNote">
+        <i class="fas fa-chart-line"></i> African Centre for Statistics · Executive Dashboard — Success measures derived from ACS mandate, four sections, core functions & knowledge products. Data reflects continental and country-level achievements (synthetic for demonstration, based on official UNECA reports). Filter by country to see localized evidence.
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // COMPREHENSIVE ACS SUCCESS DATA: Areas of Focus + Indicators + Evidence
+    // Structured by the three-stage framework.
+    // ============================================================
+
+    // 1. AREAS OF FOCUS (Core mandate, sections, functions, products)
+    const focusAreas = [
+        { id: "f1", name: "Strengthening National Statistical Systems (NSDS)", description: "Supporting 54 member states to develop, implement and finance National Strategies for the Development of Statistics." },
+        { id: "f2", name: "Economic, Infrastructure & Agriculture Statistics", description: "GDP rebasing, national accounts, agricultural surveys, infrastructure indicators, trade statistics harmonization." },
+        { id: "f3", name: "Demographic & Social Statistics", description: "Population censuses, CRVS, gender statistics, migration, health & education data." },
+        { id: "f4", name: "Statistical Development, Data Innovation & Outreach", description: "Training young statisticians, data science campuses, mobile tech, NSDS advocacy." },
+        { id: "f5", name: "Geospatial Information Management Systems", description: "AFREF, administrative boundaries, satellite imagery integration with statistics." },
+        { id: "f6", name: "Coordination & Advocacy (StatCom-Africa)", description: "Regional statistical governance, African Statistics Fund, FASDev, ASSD." },
+        { id: "f7", name: "Knowledge Products & Data Dissemination", description: "African Statistical Yearbook, ECAstats portal, African Gender Index, StatDI." }
+    ];
+
+    // 2. OBSERVABLE INDICATORS (linked to focus areas) with country/continental context
+    const indicators = [
+        { id: "i1", name: "Adoption of NSDS 2.0 / 3.0", focusId: "f1", status: "16 countries with active NSDS, 8 under revision", countryRelevant: ["all","Kenya","Rwanda","Ethiopia"] },
+        { id: "i2", name: "Integration of African Charter on Statistics into national law", focusId: "f1", status: "35+ ratifications, 12 fully integrated", countryRelevant: ["all","Ghana","Senegal","South Africa"] },
+        { id: "i3", name: "Countries using 2008 SNA for GDP compilation", focusId: "f2", status: "28 countries migrated to 2008 SNA", countryRelevant: ["all","Nigeria","Kenya","Tanzania"] },
+        { id: "i4", name: "Completion of digital population census", focusId: "f3", status: "15 countries conducted digital census (2020-2025)", countryRelevant: ["all","Malawi","Rwanda","Ethiopia","South Africa"] },
+        { id: "i5", name: "CRVS completeness (birth registration)", focusId: "f3", status: "8 countries above 85% registration; regional avg 64%", countryRelevant: ["all","Ghana","Kenya","Senegal"] },
+        { id: "i6", name: "Operationalization of data science campus / Young Statisticians", focusId: "f4", status: "3 regional data campuses, 500+ trainees", countryRelevant: ["all","Senegal","Rwanda","South Sudan"] },
+        { id: "i7", name: "Adoption of AFREF (geodetic reference frame)", focusId: "f5", status: "38 countries implementing AFREF", countryRelevant: ["all","South Africa","Nigeria","Kenya"] },
+        { id: "i8", name: "Regular publication of African Statistical Yearbook", focusId: "f7", status: "Annual edition since 2010, cited by 40+ institutions", countryRelevant: ["all"] },
+        { id: "i9", name: "Use of ECAstats data portal", focusId: "f7", status: "2.5M+ annual visits, 500+ datasets", countryRelevant: ["all"] },
+        { id: "i10", name: "African Statistics Fund operationalized", focusId: "f6", status: "Fund active, 12 donor partners", countryRelevant: ["all"] }
+    ];
+
+    // 3. SPECIFIC EVIDENCE (examples, missions, projects, publications)
+    const evidenceList = [
+        { id: "e1", description: "South Sudan NSDS 2.0 design mission (Nov 2024)", focusId: "f1", country: "South Sudan", source: "ACS Field Report" },
+        { id: "e2", description: "Malawi: 2,000 tablets provided for National Census of Agriculture and Livestock", focusId: "f2", country: "Malawi", source: "ACS Digital Transformation" },
+        { id: "e3", description: "Kenya: Adoption of 2008 SNA leading to GDP rebasing (+1.5% revision)", focusId: "f2", country: "Kenya", source: "Economic Section" },
+        { id: "e4", description: "Rwanda: Fully digital population census (2022) with geospatial integration", focusId: "f3", country: "Rwanda", source: "Demographic Section" },
+        { id: "e5", description: "Senegal: Data Science Campus launch (2024) training 120 young statisticians", focusId: "f4", country: "Senegal", source: "Innovation & Outreach" },
+        { id: "e6", description: "Ghana: CRVS digitalization pilot achieved 91% birth registration coverage", focusId: "f3", country: "Ghana", source: "Social Statistics" },
+        { id: "e7", description: "South Africa: AFREF national implementation – high-accuracy geodetic network", focusId: "f5", country: "South Africa", source: "Geospatial Section" },
+        { id: "e8", description: "African Statistical Yearbook 2025 published (flagship)", focusId: "f7", country: "all", source: "ACS Knowledge Products" },
+        { id: "e9", description: "Nigeria: Economic data harmonization workshop for informal sector measurement", focusId: "f2", country: "Nigeria", source: "Economic Section" },
+        { id: "e10", description: "Tanzania: Integration of agricultural census data with geospatial layers", focusId: "f5", country: "Tanzania", source: "Geospatial & Agri" },
+        { id: "e11", description: "StatCom-Africa 9th Session (Addis Ababa, 2024) – 50+ member states participation", focusId: "f6", country: "all", source: "Coordination" },
+        { id: "e12", description: "Ethiopia: Gender statistics dashboard launched with ACS technical support", focusId: "f3", country: "Ethiopia", source: "Social Statistics" },
+        { id: "e13", description: "Rwanda – Young Statisticians Program (Takwimu YAS) graduated 75 fellows", focusId: "f4", country: "Rwanda", source: "Outreach" },
+        { id: "e14", description: "African Statistics Fund secured $12M from AfDB, EU, World Bank", focusId: "f6", country: "all", source: "Partnerships" }
+    ];
+
+    function getFocusName(focusId) {
+        const focus = focusAreas.find(f => f.id === focusId);
+        return focus ? focus.name : focusId;
+    }
+
+    let currentCountry = "all";
+
+    function renderDashboard(countryVal) {
+        // Render focus areas (always all)
+        const focusTbody = document.getElementById('focusTableBody');
+        focusTbody.innerHTML = '';
+        focusAreas.forEach(f => {
+            const row = `<tr><td><span class="focus-badge"><i class="fas fa-circle"></i> ${f.name}</span></td><td>${f.description}</td></tr>`;
+            focusTbody.insertAdjacentHTML('beforeend', row);
+        });
+
+        // Filter indicators by country relevance
+        let filteredIndicators = indicators;
+        if (countryVal !== 'all') {
+            filteredIndicators = indicators.filter(ind => ind.countryRelevant.includes(countryVal) || ind.countryRelevant.includes('all'));
+        }
+        const indTbody = document.getElementById('indicatorsTableBody');
+        indTbody.innerHTML = '';
+        filteredIndicators.forEach(ind => {
+            const focusLinked = getFocusName(ind.focusId);
+            const row = `<tr><td><strong>${ind.name}</strong></td><td>${focusLinked}</td><td>${ind.status}</td></tr>`;
+            indTbody.insertAdjacentHTML('beforeend', row);
+        });
+
+        // Filter evidence by country
+        let filteredEvidence = evidenceList;
+        if (countryVal !== 'all') {
+            filteredEvidence = evidenceList.filter(ev => ev.country === countryVal || ev.country === 'all');
+        }
+        const evTbody = document.getElementById('evidenceTableBody');
+        evTbody.innerHTML = '';
+        if (filteredEvidence.length === 0) {
+            evTbody.innerHTML = '<tr><td colspan="4" class="empty-state">📭 No specific evidence for this country filter. Try "All African Union Member States" or another country.</td></tr>';
+        } else {
+            filteredEvidence.forEach(ev => {
+                const focusLinked = getFocusName(ev.focusId);
+                const countryDisplay = ev.country === 'all' ? '🌍 Continental' : ev.country;
+                const row = `<tr><td><i class="fas fa-check-circle" style="color:#2c7a4d;"></i> ${ev.description}</td><td>${focusLinked}</td><td>${countryDisplay}</td><td><span class="evidence-link"><i class="fas fa-external-link-alt"></i> ${ev.source}</span></td></tr>`;
+                evTbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        // Update summary counters
+        document.getElementById('totalFocus').innerText = focusAreas.length;
+        document.getElementById('totalIndicators').innerText = filteredIndicators.length;
+        document.getElementById('totalEvidence').innerText = filteredEvidence.length;
+
+        const footerDiv = document.getElementById('footerNote');
+        if (countryVal !== 'all') {
+            footerDiv.innerHTML = `<i class="fas fa-chart-line"></i> African Centre for Statistics · Executive Dashboard — Currently filtered by: <strong>${countryVal}</strong>. Showing ${filteredIndicators.length} indicators and ${filteredEvidence.length} evidence items specific to this member state.`;
+        } else {
+            footerDiv.innerHTML = `<i class="fas fa-chart-line"></i> African Centre for Statistics · Executive Dashboard — Success measures derived from ACS mandate, four sections, core functions & knowledge products. Data reflects continental and country-level achievements (synthetic for demonstration, based on official UNECA reports). Filter by country to see localized evidence.`;
+        }
+    }
+
+    const countrySelect = document.getElementById('countryFilter');
+    const resetBtn = document.getElementById('resetFilterBtn');
+
+    function applyFilter() {
+        currentCountry = countrySelect.value;
+        renderDashboard(currentCountry);
+    }
+
+    countrySelect.addEventListener('change', applyFilter);
+    resetBtn.addEventListener('click', () => {
+        countrySelect.value = 'all';
+        applyFilter();
+    });
+
+    renderDashboard('all');
+</script>
+</body>
+</html>
